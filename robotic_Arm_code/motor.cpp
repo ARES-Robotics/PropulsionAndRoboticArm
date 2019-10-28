@@ -14,10 +14,10 @@ motor_l298n::motor_l298n(const int forwardPin, const int backwardPin, const int 
 void motor_l298n::moveMotor(int PWMvalue){
   this->PWMData = PWMvalue;
 
-  if(this->PWMData > 10){
+  if(this->PWMData > THRESHOLD){
     this->forwardMotion = YES;
     this->backwardMotion = NO;
-  }else if(this->PWMData < -10){
+  }else if(this->PWMData < (-1)*THRESHOLD){
     this->forwardMotion = NO;
     this->backwardMotion = YES;
   }else{

@@ -11,6 +11,7 @@ motor_l298n::motor_l298n(const int forwardPin, const int backwardPin, const int 
   this->backwardMotion = NO;
 }
 
+//helper function
 void motor_l298n::moveMotor(int PWMvalue){
   this->PWMData = PWMvalue;
 

@@ -14,7 +14,6 @@ class motor_l298n{
   public:
    motor_l298n(int forwardPin, int backwardPin, int PWMpin);
    
-   
    int inputLeftPin;
    int inputRightPin;
    int enablePin;

@@ -13,8 +13,6 @@ motor_l298n motors[6] = {motor0, motor1, motor2, motor3, motor4, motor5};
 
 void setup() {
   setMotorOutputPinout();
-  
-  
 }
 
 void loop() {

@@ -76,16 +76,15 @@ def read_commands(conn):
         dataFromBase = str(conn.recv(1024),"utf-8")
         print(dataFromBase + "\n")
         if(len(dataFromBase) > 3):
-            send_commands(conn,'1')
             processDataToArduino(dataFromBase)
-        
-            while arduinoSerial.inWaiting() < 1:
-                pass
-            serialData = str(arduinoSerial.readline())
-            if(len(serialData) > 2):
-                print(makeDataWhatArduinoSent(serialData))
+#            while arduinoSerial.inWaiting() < 1:
+#                pass
+#            serialData = str(arduinoSerial.readline())
+#            if(len(serialData) > 2):
+#                print(makeDataWhatArduinoSent(serialData))
+            send_commands(conn,'YES')
         else:
-            send_commands(conn,'0')
+            send_commands(conn,'NO')
 
 ######################################################################################################################
 ###########  # Process Data from raspberrypi to Arduino
@@ -108,9 +107,9 @@ def main():
     socket_accept()
 ############################################################
 #Sending fake data
-    processDataToArduino('1,1001,1002,1003,1004,1005,1006');
-    time.sleep(2)
-    processDataToArduino('0,0,0,0,0,0,0');
+#    processDataToArduino('1,1001,1002,1003,1004,1005,1006');
+#    time.sleep(2)
+#    processDataToArduino('0,0,0,0,0,0,0');
 ########################################
 
 main()

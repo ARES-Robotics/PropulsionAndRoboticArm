@@ -14,7 +14,7 @@ from pynput import keyboard
 ###################### SOCKET OBJECT AND VARIABLES ###################################################
 ##################################################################################
 s = socket.socket()
-host = '192.168.10.105'  #IP Address of the Raspberry pi
+host = '192.168.10.101'  #IP Address of the Raspberry pi
 port = 9999            #Must be same as that in server.py
 print('hello1')
 #In client.py we use another way to bind host and port together by using connect function()
@@ -46,6 +46,7 @@ def increaseForwardBackwardSpeed():
     if(forwardBackwardSpeed > 255):
         forwardBackwardSpeed = 255;
     printSpeeds()
+    sendDatatoRaspi()
 
 def decreaseForwardBackwardSpeed():
     global forwardBackwardSpeed
@@ -53,6 +54,7 @@ def decreaseForwardBackwardSpeed():
     if (forwardBackwardSpeed < -255):
         forwardBackwardSpeed = -255;
     printSpeeds()
+    sendDatatoRaspi()
 
 def increaseleftRightSpeed():
     global leftRightSpeed
@@ -60,6 +62,7 @@ def increaseleftRightSpeed():
     if (leftRightSpeed > 255):
         leftRightSpeed = 255;
     printSpeeds()
+    sendDatatoRaspi()
 
 def decreaseleftRightSpeed():
     global leftRightSpeed
@@ -67,6 +70,7 @@ def decreaseleftRightSpeed():
     if (leftRightSpeed < -255):
         leftRightSpeed = -255;
     printSpeeds()
+    sendDatatoRaspi()
 ##################################################################################
 ############################### print statements ##################################
 ##################################################################################

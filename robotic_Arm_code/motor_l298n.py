@@ -15,10 +15,12 @@
 #
 ##########
 
-class motor1_ibt2:
-    def __init__(self,LPWMPin, RPWMPin):
-        self.LPWMPin = LPWMPin      #Pins initialization
-        self.RPWMPin = RPWMPin      #Pins initialization
+class motor1_L298n:
+    def __init__(self,inputLeftPin, inputRightPin, enablePin):
+        self.inputLeftPin = inputLeftPin      #Pins initialization
+        self.inputRightPin = inputRightPin      #Pins initialization
+        self.enablePin = enablePin                #Pins initialization
+
         self.PWMData = 0            #PWM data
         self.forwwardMotion = 0     #0 means NO, 1 means yes
         self.backwardMotion = 0     #0 means NO, 1 means yes
@@ -26,13 +28,12 @@ class motor1_ibt2:
         # IO.setwarnings(False)
         # IO.setmode(IO.BCM)
         #
-        # IO.setup(LPWMPin, IO.OUT)
-        # self.LPWMctrl = IO.PWM(LPWMPin,100) £
-        # self.LPWMctrl.start(0)
+        # IO.setup(enablePin, IO.OUT)
+        # self.enablePinCtrl = IO.PWM(enablePin,100)
+        # self.enablePinCtrl.start(0)
         #
-        # IO.setup(RPWMPin,IO.OUT)
-        # self.RPWMctrl = IO.PWM(RPWMPin, 100)
-        # self.RPWMctrl.start(0)
+        # IO.setup(inputLeftPin,IO.OUT)
+        # IO.setup(inputRightPin, IO.OUT)
 
     def moveMotor(self, duticycle):
         self.PWMData = duticycle
@@ -40,24 +41,29 @@ class motor1_ibt2:
         if duticycle > 10:
             self.forwwardMotion = 1
             self.backwardMotion = 0
+            # IO.output(self.inputLeftPin, IO.HIGH)
+            # IO.output(self.inputRightPin, IO.LOW)
+
         elif duticycle < -10:
             self.forwwardMotion = 0
             self.backwardMotion = 1
+            # IO.output(self.inputLeftPin, IO.LOW)
+            # IO.output(self.inputRightPin, IO.HIGH)
         else:
             self.forwwardMotion = 0
             self.backwardMotion = 0
+            # IO.output(self.inputLeftPin, IO.LOW)
+            # IO.output(self.inputRightPin, IO.LOW)
 
         self.PWMData = abs(duticycle);
 
-        # LPWM_duticycle = (self.forwwardMotion)*(self.PWMData);
-        # RPWM_duticycle = (self.backwardMotion) * (self.PWMData);
-        #
-        # self.LPWMctrl.ChangeDutyCycle(LPWM_duticycle)
-        # self.RPWMctrl.ChangeDutyCycle(RPWM_duticycle)
+
+        # self.enablePinCtrl.ChangeDutyCycle(self.PWMData)
 
     def printMotor(self):
-        print(self.LPWMPin)
-        print(self.RPWMPin)
+        print(self.inputLeftPin)
+        print(self.inputRightPin)
+        print(self.enablePin)
         print(self.PWMData)
         print(self.forwwardMotion)
         print(self.backwardMotion)

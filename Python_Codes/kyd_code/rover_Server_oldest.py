@@ -1,3 +1,4 @@
+
 ##### Attrey Bhatt Codes - https://github.com/attreyabhatt/Reverse-Shell ###########
 # If we are hacker then this file will go to our server that has a static ip address
 
@@ -6,17 +7,14 @@ import socket
 #importing PySerial and time
 import serial
 import time
-import motor_ibt2
-###################ARDUINO SERIAL OBJECT#################################################
-#serialPortMac = '/dev/tty.usbmodem14101'
-#serialPortPi = '/dev/ttyACM0'
-#arduinoSerial = serial.Serial(serialPortMac, 9600, timeout = 1)
 
-mode = 0;
-motorspeed1 = 0
-motorspeed2 = 0
-forward_left_motor = motor_ibt2.motor1_ibt2(13,19)
-forward_right_motor = motor_ibt2.motor1_ibt2(20,21)
+###################ARDUINO SERIAL OBJECT#################################################
+serialPortMac = '/dev/tty.usbmodem14101'
+serialPortPi = '/dev/ttyACM0'
+arduinoSerial = serial.Serial(serialPortMac, 9600, timeout = 1)
+
+
+
 ######################################################################################################################
 ########## Function to Create a Socket ( socket connect two computers)
 ######################################################################################################################
@@ -73,83 +71,28 @@ def send_commands(conn,data):
 ######################################################################################################################
 ###########  # Send commands to client/victim or a friend
 ######################################################################################################################
-
-def strToInt(string):
-    if(len(string) == 0):
-        print('string length 0')
-        return 0;
-    x=0
-    flag = 0
-    if(string[0]=='-'):
-        flag=1
-        
-    for i in range (0,len(string)):
-                    if string[i].isdigit():
-                        x+=int(string[i])*10**int(len(string)-i-1)
-                        print('In strToInt',i,x)
-    if (flag ==1):
-        return (-1)*x
-    else:
-        return x
-
 def read_commands(conn):
-    global mode,motorspeed1, motorspeed2, forward_left_motor, forward_right_motor
     while True:
         dataFromBase = str(conn.recv(1024),"utf-8")
-        print("\n"+dataFromBase)
-        print('lengthOfData', len(dataFromBase))
+        print(dataFromBase + "\n")
         if(len(dataFromBase) > 3):
+            processDataToArduino(dataFromBase)
+#            while arduinoSerial.inWaiting() < 1:
+#                pass
+#            serialData = str(arduinoSerial.readline())
+#            if(len(serialData) > 2):
+#                print(makeDataWhatArduinoSent(serialData))
             send_commands(conn,'YES')
-            index1 = dataFromBase.index(',')
-            mode = dataFromBase[0:index1]
-            
-            print('At index1+1 of dataFromBase',dataFromBase[index1+1])
-            
-            index2 = dataFromBase.index(',',index1+1)
-            print('At index2+1 of dataFromBase',dataFromBase[index2+1])
-            
-            motorspeed= dataFromBase[index1+1:index2]
-            a= strToInt(motorspeed)
-            motorspeed1 = a
-            motorspeed2 = a
-            #motorspeed.strip()
-            print('motorspeed1',motorspeed1)
-         #   motorspeed1=strToInt(motorspeed)
-            
-           # print(motorspeed)
-            #index3 = dataFromBase.index(',',index2)
-            motorspeed= dataFromBase[index2+1:]
-            
-            print(motorspeed)
-            #motorspeed.strip()
-            b=strToInt(motorspeed)
-            
-            motorspeed1-=b
-            motorspeed2+=b
-            if (motorspeed1 > 100):
-                motorspeed1 = 100
-            elif (motorspeed1 < -100):
-                motorspeed1 = -100
-            
-            if (motorspeed2 > 100):
-                motorspeed2 = 100
-            elif (motorspeed2 < -100):
-                motorspeed2 = -100
-            print('motorspeed1',motorspeed1)
-            print('motorspeed2',motorspeed2)
-            
-            forward_left_motor.moveMotor(motorspeed1)
-            forward_right_motor.moveMotor(motorspeed2)
         else:
             send_commands(conn,'NO')
 
 ######################################################################################################################
 ###########  # Process Data from raspberrypi to Arduino
 ######################################################################################################################
-#def processDataToArduino(data):
- #   arduinoSerial.write(str(data).encode())
+def processDataToArduino(data):
+    arduinoSerial.write(str(data).encode())
 
-#####################################################################################################################
+######################################################################################################################
 ###########  # Remove b'' and\r\n from the string
 ######################################################################################################################
 def makeDataWhatArduinoSent(data):
@@ -170,4 +113,10 @@ def main():
 ########################################
 
 main()
+
+
+
+
+
+
 

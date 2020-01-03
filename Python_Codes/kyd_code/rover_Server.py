@@ -15,8 +15,10 @@ import motor_ibt2
 mode = 0;
 motorspeed1 = 0
 motorspeed2 = 0
-forward_left_motor = motor_ibt2.motor1_ibt2(13,19)
-forward_right_motor = motor_ibt2.motor1_ibt2(20,21)
+forward_left_motor = motor_ibt2.motor1_ibt2(6,13)
+forward_right_motor = motor_ibt2.motor1_ibt2(25,8)
+backward_left_motor = motor_ibt2.motor1_ibt2(19,26)
+backward_right_motor = motor_ibt2.motor1_ibt2(7,1)
 ######################################################################################################################
 ########## Function to Create a Socket ( socket connect two computers)
 ######################################################################################################################
@@ -92,8 +94,43 @@ def strToInt(string):
     else:
         return x
 
+def propulsion(dataFromBase, index1):
+        index2 = dataFromBase.index(',',index1+1)
+           
+        motorspeed = dataFromBase[index1+1:index2]
+        a = strToInt(motorspeed)
+        motorspeed1 = a
+        motorspeed2 = a
+        
+        #print('motorspeed1',motorspeed1)
+        motorspeed = dataFromBase[index2+1:]
+            
+        print(motorspeed)
+        b = strToInt(motorspeed)
+            
+        motorspeed1 -= b
+        motorspeed2 += b
+        if (motorspeed1 > 70):
+            motorspeed1 = 70
+        elif (motorspeed1 < -70):
+            motorspeed1 = -70
+            
+        if (motorspeed2 > 70):
+            motorspeed2 = 70
+        elif (motorspeed2 < -70):
+            motorspeed2 = -70
+
+        print('motorspeed1',motorspeed1)
+        print('motorspeed2',motorspeed2)
+            
+        forward_left_motor.moveMotor(motorspeed2)
+        backward_left_motor.moveMotor(motorspeed2)
+            
+        forward_right_motor.moveMotor(motorspeed1)
+        backward_right_motor.moveMotor(motorspeed1)
+
 def read_commands(conn):
-    global mode,motorspeed1, motorspeed2, forward_left_motor, forward_right_motor
+    global mode,motorspeed1, motorspeed2, forward_left_motor, forward_right_motor, backward_left_motor, backward_right_motor;
     while True:
         dataFromBase = str(conn.recv(1024),"utf-8")
         print("\n"+dataFromBase)
@@ -102,44 +139,12 @@ def read_commands(conn):
             send_commands(conn,'YES')
             index1 = dataFromBase.index(',')
             mode = dataFromBase[0:index1]
-            
-            print('At index1+1 of dataFromBase',dataFromBase[index1+1])
-            
-            index2 = dataFromBase.index(',',index1+1)
-            print('At index2+1 of dataFromBase',dataFromBase[index2+1])
-            
-            motorspeed= dataFromBase[index1+1:index2]
-            a= strToInt(motorspeed)
-            motorspeed1 = a
-            motorspeed2 = a
-            #motorspeed.strip()
-            print('motorspeed1',motorspeed1)
-         #   motorspeed1=strToInt(motorspeed)
-            
-           # print(motorspeed)
-            #index3 = dataFromBase.index(',',index2)
-            motorspeed= dataFromBase[index2+1:]
-            
-            print(motorspeed)
-            #motorspeed.strip()
-            b=strToInt(motorspeed)
-            
-            motorspeed1-=b
-            motorspeed2+=b
-            if (motorspeed1 > 100):
-                motorspeed1 = 100
-            elif (motorspeed1 < -100):
-                motorspeed1 = -100
-            
-            if (motorspeed2 > 100):
-                motorspeed2 = 100
-            elif (motorspeed2 < -100):
-                motorspeed2 = -100
-            print('motorspeed1',motorspeed1)
-            print('motorspeed2',motorspeed2)
-            
-            forward_left_motor.moveMotor(motorspeed1)
-            forward_right_motor.moveMotor(motorspeed2)
+
+            if(mode = '0'):
+                propulsion(dataFromBase,index1);
+            elif(mode = '1'):
+                roboticArm();
+    
         else:
             send_commands(conn,'NO')
 

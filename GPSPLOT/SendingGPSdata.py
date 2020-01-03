@@ -1,4 +1,3 @@
-
 ##### Attrey Bhatt Codes - https://github.com/attreyabhatt/Reverse-Shell ###########
 # If we are hacker then this file will go to our server that has a static ip address
 
@@ -7,14 +6,12 @@ import socket
 #importing PySerial and time
 import serial
 import time
-
 ###################ARDUINO SERIAL OBJECT#################################################
-#serialPortMac = '/dev/tty.usbmodem14101'
-#serialPortPi = '/dev/ttyACM0'
-#arduinoSerial = serial.Serial(serialPortMac, 9600, timeout = 1)
+serialPortMac = '/dev/tty.usbmodem14101'
+serialPortPi = '/dev/ttyACM0'
+arduinoSerial = serial.Serial(serialPortMac, 9600, timeout = 1)
 
-
-
+gpsData = 'Lat,Long'
 ######################################################################################################################
 ########## Function to Create a Socket ( socket connect two computers)
 ######################################################################################################################
@@ -68,20 +65,7 @@ def socket_accept():
 ######################################################################################################################
 def send_commands(conn,data):
     conn.send(str.encode(data))
-######################################################################################################################
-###########  # Send commands to client/victim or a friend
-######################################################################################################################
-def read_commands(conn):
-    while True:
-        print('beforeReading')
-        dataFromBase = str(conn.recv(1024),"utf-8")
-        print('afterReading')
-        print(dataFromBase + "\n")
-        if(len(dataFromBase) > 3):
-            #processDataToArduino(dataFromBase)
-            send_commands(conn,'YES')
-        else:
-            send_commands(conn,'NO')
+##########################################################################
 
 ######################################################################################################################
 ###########  # Process Data from raspberrypi to Arduino
@@ -89,12 +73,21 @@ def read_commands(conn):
 def processDataToArduino(data):
     arduinoSerial.write(str(data).encode())
 
-######################################################################################################################
-###########  # Remove b'' and\r\n from the string
-######################################################################################################################
-def makeDataWhatArduinoSent(data):
-    return data[2:len(data)-5]
-    
+def readDataFromArduino():
+    global gpsData
+    gpsData = arduinoSerial.readLine()
+
+def read_commands(conn):
+    while True:
+        readDataFromArduino();
+        print('gpsData', gpsData);
+        if(len(gpsData) > 3):
+            send_commands(conn, gpsData)
+        else:
+            send_commands(conn,'NO')
+
+
+
 ######################################################################################################################
 ###########  # MAIN
 ######################################################################################################################
@@ -110,10 +103,4 @@ def main():
 ########################################
 
 main()
-
-
-
-
-
-
 

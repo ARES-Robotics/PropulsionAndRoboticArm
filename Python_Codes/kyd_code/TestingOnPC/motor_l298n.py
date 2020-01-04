@@ -1,4 +1,5 @@
- import Rpio.GPIO as IO
+#UNCOMMENT FOLLOWING LINE ON RASPBERRY PI:
+#import Rpio.GPIO as IO
 
 #
 # This class has 7 variables: LPWMPin: Raspi pin number connected to LPWM of IBT2,
@@ -25,15 +26,15 @@ class motor1_L298n:
         self.forwwardMotion = 0     #0 means NO, 1 means yes
         self.backwardMotion = 0     #0 means NO, 1 means yes
 
-         IO.setwarnings(False)
-         IO.setmode(IO.BCM)
-        
-         IO.setup(enablePin, IO.OUT)
-         self.enablePinCtrl = IO.PWM(enablePin,100)
-         self.enablePinCtrl.start(0)
-        
-         IO.setup(inputLeftPin,IO.OUT)
-         IO.setup(inputRightPin, IO.OUT)
+#         IO.setwarnings(False)
+#         IO.setmode(IO.BCM)
+#
+#         IO.setup(enablePin, IO.OUT)
+#         self.enablePinCtrl = IO.PWM(enablePin,100)
+#         self.enablePinCtrl.start(0)
+#
+#         IO.setup(inputLeftPin,IO.OUT)
+#         IO.setup(inputRightPin, IO.OUT)
 
     def moveMotor(self, duticycle):
         self.PWMData = duticycle
@@ -41,32 +42,28 @@ class motor1_L298n:
         if duticycle > 5:
             self.forwwardMotion = 1
             self.backwardMotion = 0
-             IO.output(self.inputLeftPin, IO.HIGH)
-             IO.output(self.inputRightPin, IO.LOW)
+#             IO.output(self.inputLeftPin, IO.HIGH)
+#             IO.output(self.inputRightPin, IO.LOW)
 
         elif duticycle < -5:
             self.forwwardMotion = 0
             self.backwardMotion = 1
-             IO.output(self.inputLeftPin, IO.LOW)
-             IO.output(self.inputRightPin, IO.HIGH)
+#             IO.output(self.inputLeftPin, IO.LOW)
+#             IO.output(self.inputRightPin, IO.HIGH)
         else:
             self.forwwardMotion = 0
             self.backwardMotion = 0
-            IO.output(self.inputLeftPin, IO.LOW)
-            IO.output(self.inputRightPin, IO.LOW)
+#            IO.output(self.inputLeftPin, IO.LOW)
+#            IO.output(self.inputRightPin, IO.LOW)
 
         self.PWMData = abs(duticycle);
 
 
-        self.enablePinCtrl.ChangeDutyCycle(self.PWMData)
+#        self.enablePinCtrl.ChangeDutyCycle(self.PWMData)
 
-    def printMotor(self):
-        print(self.inputLeftPin)
-        print(self.inputRightPin)
-        print(self.enablePin)
-        print(self.PWMData)
-        print(self.forwwardMotion)
-        print(self.backwardMotion)
+    def printMotor(self,motorName):
+        print(motorName,self.inputLeftPin,self.inputRightPin,self.enablePin,self.PWMData,self.forwwardMotion,self.backwardMotion)
+
 
 #######################################################################
 #######################################################################
@@ -82,39 +79,36 @@ class motor1_L298n_NOPWM:
         self.forwwardMotion = 0     #0 means NO, 1 means yes
         self.backwardMotion = 0     #0 means NO, 1 means yes
             
-        IO.setwarnings(False)
-        IO.setmode(IO.BCM)
-            
+#        IO.setwarnings(False)
+#        IO.setmode(IO.BCM)
+
 #        IO.setup(enablePin, IO.OUT)                 //EnablePin Shorted to 5V
 #        self.enablePinCtrl = IO.PWM(enablePin,100)
 #        self.enablePinCtrl.start(0)
 
-        IO.setup(inputLeftPin,IO.OUT)
-        IO.setup(inputRightPin, IO.OUT)
+#        IO.setup(inputLeftPin,IO.OUT)
+#        IO.setup(inputRightPin, IO.OUT)
 
     def moveMotor(self, duticycle):
         self.PWMData = duticycle
         
-            if duticycle > 5:
-                self.forwwardMotion = 1
-                self.backwardMotion = 0
-                IO.output(self.inputLeftPin, IO.HIGH)
-                IO.output(self.inputRightPin, IO.LOW)
-    
-            elif duticycle < -5:
-                self.forwwardMotion = 0
-                self.backwardMotion = 1
-                IO.output(self.inputLeftPin, IO.LOW)
-                IO.output(self.inputRightPin, IO.HIGH)
-            else:
-                self.forwwardMotion = 0
-                self.backwardMotion = 0
-                IO.output(self.inputLeftPin, IO.LOW)
-                IO.output(self.inputRightPin, IO.LOW)
+        if duticycle > 5:
+            self.forwwardMotion = 1
+            self.backwardMotion = 0
+#            IO.output(self.inputLeftPin, IO.HIGH)
+#            IO.output(self.inputRightPin, IO.LOW)
+
+        elif duticycle < -5:
+            self.forwwardMotion = 0
+            self.backwardMotion = 1
+#            IO.output(self.inputLeftPin, IO.LOW)
+#            IO.output(self.inputRightPin, IO.HIGH)
+        else:
+            self.forwwardMotion = 0
+            self.backwardMotion = 0
+#            IO.output(self.inputLeftPin, IO.LOW)
+#            IO.output(self.inputRightPin, IO.LOW)
 
 
-    def printMotor(self):
-        print(self.inputLeftPin)
-        print(self.inputRightPin)
-        print(self.forwwardMotion)
-        print(self.backwardMotion)
+    def printMotor(self,motorName):
+        print(motorName,self.inputLeftPin,self.inputRightPin,self.forwwardMotion, self.backwardMotion)

@@ -14,7 +14,7 @@ from pynput import keyboard
 ###################### SOCKET OBJECT AND VARIABLES ###################################################
 ##################################################################################
 s = socket.socket()
-host = '192.168.10.101'  #IP Address of the Raspberry pi
+host = '192.168.152.68'  #IP Address of the Raspberry pi
 port = 9999            #Must be same as that in server.py
 print('hello1')
 #In client.py we use another way to bind host and port together by using connect function()
@@ -41,14 +41,20 @@ clawRoll = 0;
 clawOpenClose = 0;
 
 def sendDatatoRaspi():
-    global forwardBackwardSpeed
-    global leftRightSpeed
-    stringData = str(mode) + ',' + str(forwardBackwardSpeed) + ',' + str(leftRightSpeed)
-    # Sendng this data from socket to the raspberry pi
-    s.send(str.encode(stringData))
+    global forwardBackwardSpeed, leftRightSpeed;
+    global baseMotor, baseActuator, armActuator, clawRoll, clawPitch, clawOpenClose;
+    global mode
+    
+    if(mode == 0):
+        stringData = str(mode) + ',' + str(forwardBackwardSpeed) + ',' + str(leftRightSpeed)
+        s.send(str.encode(stringData))
+    elif(mode == 1):
+        stringData = str(mode) + ',' + str(baseMotor) + ',' + str(baseActuator) + ',' + str(armActuator) + ',' + str(clawPitch) + ',' + str(clawRoll)  + ',' + str(clawOpenClose);
+        s.send(str.encode(stringData))
     # After sending we check if it was recieved or not
     checkDataTranfer = s.recv(1024)
     print(checkDataTranfer)
+
 ##################################################################################
 ################# Variables amd functions for PROPULSION SPEED ###################
 ##################################################################################
@@ -113,9 +119,22 @@ def applyBrakes():
         elif(forwardBackwardSpeed < -5):
             forwardBackwardSpeed = forwardBackwardSpeed + brakeValue;
         else:
+            forwardBackwardSpeed = 0;
+
+        if(leftRightSpeed > 5):
             leftRightSpeed = leftRightSpeed - brakeValue;
+        elif(leftRightSpeed < -5):
+            leftRightSpeed = leftRightSpeed + brakeValue;
+        else:
+            leftRightSpeed = 0;
+        printSpeeds();
+        sendDatatoRaspi();
 
-
+def moveStraight():
+    global leftRightSpeed;
+    leftRightSpeed = 0;
+    printSpeeds();
+    sendDatatoRaspi();
 
 ##################################################################################
 ################# Variables amd functions for Robotic Arm ###################
@@ -246,10 +265,10 @@ def on_press(key):
     elif(format(key) == 'Key.space'):
         stopAllMotors();
     elif(format(key) == 'Key.enter'):
-        mode = mode ^ 1             #Change Mode value
+        mode = (mode + 1) % 3;             #Change Mode value
         print('MODE CHANGED - 0: Propulsion, 1: Robotic Arm')
     elif(format(key) == 'Key.shift_r'):
-        applyBrakes();
+        moveStraight();
     else: #It is a character (length = 10) or a number (length = 3)
         if(len(keyData) == 3): # If it is a number
             shotenKeyData = keyData[1];

@@ -1,6 +1,5 @@
 ##### Attrey Bhatt Codes - https://github.com/attreyabhatt/Reverse-Shell ###########
 # If we are hacker then this file will go to our server that has a static ip address
-
 #importing socket so that we can connect two computer
 import socket
 #importing PySerial and time
@@ -10,21 +9,19 @@ import motor_ibt2
 import motor_l298n
 import os
 
+
 ###################ARDUINO SERIAL OBJECT#################################################
 #serialPortMac = '/dev/tty.usbmodem14101'
 #serialPortPi = '/dev/ttyACM0'
 #arduinoSerial = serial.Serial(serialPortMac, 9600, timeout = 1)
 
-################################
-# VARIABLES FOR PROPULSION MOTOR:
-#################################
 mode = 0;
 motorspeed1 = 0
 motorspeed2 = 0
-forward_left_motor = motor_ibt2.motor1_ibt2(6,13)
-forward_right_motor = motor_ibt2.motor1_ibt2(25,8)
-backward_left_motor = motor_ibt2.motor1_ibt2(19,26)
-backward_right_motor = motor_ibt2.motor1_ibt2(7,1)
+forward_left_motor = motor_ibt2.motor1_ibt2(2,3)
+forward_right_motor = motor_ibt2.motor1_ibt2(4,17)
+backward_left_motor = motor_ibt2.motor1_ibt2(15,14)
+backward_right_motor = motor_ibt2.motor1_ibt2(23,18)
 
 ################################
 # VARIABLES FOR ROBOTIC ARM:
@@ -36,13 +33,13 @@ clawPitch = 0;
 clawRoll = 0;
 clawOpenClose = 0;
 
-Motor1_baseMotor = motor_ibt2.motor1_ibt2(3,4);             #IBT2 (2 pin)
-Motor2_baseActuator = motor_l298n.motor1_L298n_NOPWM(5,6);#L298n (2 pin)
-Motor3_armActuator = motor_l298n.motor1_L298n_NOPWM(8,9); #L298n (2 pin)
-Motor4_clawPitch = motor_l298n.motor1_L298n_NOPWM(11,12); #L298n (2 pin)
-Motor5_clawRoll = motor_l298n.motor1_L298n(14,15,16);     #L298n (3 pin)
-Motor6_clawOpenClose = motor_l298n.motor1_L298n_NOPWM(17,18);#L298n (2 pin)
-
+Motor1_baseMotor = motor_ibt2.motor1_ibt2(25,24);             #IBT2 (2 pin)
+Motor2_baseActuator = motor_l298n.motor1_L298n_NOPWM(6,13);#L298n (2 pin)
+Motor3_armActuator = motor_l298n.motor1_L298n_NOPWM(19,26); #L298n (2 pin)
+Motor4_clawPitch = motor_l298n.motor1_L298n_NOPWM(12,1); #L298n (2 pin)
+Motor5_clawRoll = motor_l298n.motor1_L298n(21,20,16);     #L298n (3 pin)
+Motor6_clawOpenClose = motor_l298n.motor1_L298n_NOPWM(7,8);#L298n (2 pin)
+#
 #########################################################
 #########################################################
 groundIP = "192.168.185.58"
@@ -60,9 +57,8 @@ def IPCheckRoutine():
             dataFromBase = "1,0,0,0,0,0,0"
             index1 = dataFromBase.index(',')
             roboticArm(dataFromBase,index1);
-        print('BASE - NOT CONNECTED',dataFromBase)
-    threading.Timer(3, IPCheckRoutine).start()
 
+    threading.Timer(3, IPCheckRoutine).start()
 #########################################################
 ######################################
 
@@ -142,41 +138,41 @@ def strToInt(string):
         return x
 
 def propulsion(dataFromBase, index1):
-        global mode,motorspeed1, motorspeed2, forward_left_motor, forward_right_motor, backward_left_motor, backward_right_motor;
+    global mode,motorspeed1, motorspeed2, forward_left_motor, forward_right_motor, backward_left_motor, backward_right_motor;
         
-        index2 = dataFromBase.index(',',index1+1)
-           
-        motorspeed = dataFromBase[index1+1:index2]
-        a = strToInt(motorspeed)
-        motorspeed1 = a
-        motorspeed2 = a
+    index2 = dataFromBase.index(',',index1+1)
         
-        #print('motorspeed1',motorspeed1)
-        motorspeed = dataFromBase[index2+1:]
-            
-        print(motorspeed)
-        b = strToInt(motorspeed)
-            
-        motorspeed1 -= b
-        motorspeed2 += b
-        if (motorspeed1 > 100):
-            motorspeed1 = 100
-        elif (motorspeed1 < -100):
-            motorspeed1 = -100
-            
-        if (motorspeed2 > 100):
-            motorspeed2 = 100
-        elif (motorspeed2 < -100):
-            motorspeed2 = -100
-
-        print('motorspeed1',motorspeed1)
-        print('motorspeed2',motorspeed2)
-            
-        forward_left_motor.moveMotor(motorspeed2)
-        backward_left_motor.moveMotor(motorspeed2)
-
-        forward_right_motor.moveMotor(motorspeed1)
-        backward_right_motor.moveMotor(motorspeed1)
+    motorspeed = dataFromBase[index1+1:index2]
+    a = strToInt(motorspeed)
+    motorspeed1 = a
+    motorspeed2 = a
+        
+    #print('motorspeed1',motorspeed1)
+    motorspeed = dataFromBase[index2+1:]
+        
+    print(motorspeed)
+    b = strToInt(motorspeed)
+        
+    motorspeed1 -= b
+    motorspeed2 += b
+    if (motorspeed1 > 100):
+        motorspeed1 = 100
+    elif (motorspeed1 < -100):
+        motorspeed1 = -100
+        
+    if (motorspeed2 > 100):
+        motorspeed2 = 100
+    elif (motorspeed2 < -100):
+        motorspeed2 = -100
+    
+    print('motorspeed1',motorspeed1)
+    print('motorspeed2',motorspeed2)
+        
+    forward_left_motor.moveMotor(motorspeed2)
+    backward_left_motor.moveMotor(motorspeed2)
+        
+    forward_right_motor.moveMotor(motorspeed1)
+    backward_right_motor.moveMotor(motorspeed1)
 
 def printRoboticArmVariables():
     print(baseMotorSpeed, baseActuator, armActuator, clawPitch, clawRoll, clawOpenClose)
@@ -190,7 +186,7 @@ def roboticArm(dataFromBase, index1):
     baseMotorSpeed = strToInt(StrbaseMotorSpeed);
     Motor1_baseMotor.moveMotor(baseMotorSpeed);
     Motor1_baseMotor.printMotor('Motor1_baseMotor');
-
+    
     index3 = dataFromBase.index(',',index2+1)
     StrbaseActuator = dataFromBase[index2+1:index3]
     baseActuator = strToInt(StrbaseActuator);
@@ -202,35 +198,35 @@ def roboticArm(dataFromBase, index1):
     armActuator = strToInt(StrarmActuator);
     Motor3_armActuator.moveMotor(armActuator);
     Motor3_armActuator.printMotor('Motor3_armActuator');
-
+    
     index5 = dataFromBase.index(',',index4+1)
     StrclawPitch = dataFromBase[index4+1:index5]
     clawPitch = strToInt(StrclawPitch);
     Motor4_clawPitch.moveMotor(clawPitch);
     Motor4_clawPitch.printMotor('Motor4_clawPitch');
-
+    
     index6 = dataFromBase.index(',',index5+1)
     StrclawRoll = dataFromBase[index5+1:index6]
     clawRoll = strToInt(StrclawRoll);
     Motor5_clawRoll.moveMotor(clawRoll);
     Motor5_clawRoll.printMotor('Motor5_clawRoll');
-
+    
     StrclawOpenClose = dataFromBase[index6+1:]
     clawOpenClose = strToInt(StrclawOpenClose);
     Motor6_clawOpenClose.moveMotor(clawOpenClose);
     Motor6_clawOpenClose.printMotor('Motor6_clawOpenClose');
-
+    
     printRoboticArmVariables();
+
 
 def read_commands(conn):
     global mode,motorspeed1, motorspeed2, forward_left_motor, forward_right_motor, backward_left_motor, backward_right_motor;
+    
     IPCheckRoutine()
     while True:
-        #Check if we are connected to base or not:
-        #If connected then read data else stop
         dataFromBase = str(conn.recv(1024),"utf-8")
         print("\n Received Data = "+dataFromBase)
-#        print('lengthOfData', len(dataFromBase))
+        #        print('lengthOfData', len(dataFromBase))
         if(len(dataFromBase) > 3):
             send_commands(conn,'YES')
             index1 = dataFromBase.index(',')

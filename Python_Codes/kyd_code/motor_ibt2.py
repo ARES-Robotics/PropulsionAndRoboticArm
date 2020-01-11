@@ -1,4 +1,4 @@
-# import Rpio.GPIO as IO
+import Rpio.GPIO as IO
 
 #
 # This class has 7 variables: LPWMPin: Raspi pin number connected to LPWM of IBT2,
@@ -37,10 +37,10 @@ class motor1_ibt2:
     def moveMotor(self, duticycle):
         self.PWMData = duticycle
 
-        if duticycle > 10:
+        if duticycle > 7:
             self.forwwardMotion = 1
             self.backwardMotion = 0
-        elif duticycle < -10:
+        elif duticycle < -7:
             self.forwwardMotion = 0
             self.backwardMotion = 1
         else:
@@ -55,9 +55,4 @@ class motor1_ibt2:
          self.LPWMctrl.ChangeDutyCycle(LPWM_duticycle)
          self.RPWMctrl.ChangeDutyCycle(RPWM_duticycle)
 
-    def printMotor(self):
-        print(self.LPWMPin)
-        print(self.RPWMPin)
-        print(self.PWMData)
-        print(self.forwwardMotion)
-        print(self.backwardMotion)
+    def printMotor(self,motorName): print(motorName,self.LPWMPin,self.RPWMPin,self.PWMData,self.forwwardMotion,self.backwardMotion)

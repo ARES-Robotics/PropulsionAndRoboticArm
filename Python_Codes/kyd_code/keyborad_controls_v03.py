@@ -7,14 +7,14 @@ import socket
 import time
 #importing Serial to take data from serial port
 import serial
-#importing the keyboard listener from pynput
+#importing the ke yboard listener from pynput
 from pynput import keyboard
 
 ##################################################################################
 ###################### SOCKET OBJECT AND VARIABLES ###################################################
 ##################################################################################
 s = socket.socket()
-host = '192.168.152.68'  #IP Address of the Raspberry pi
+host = '192.168.10.102'  #IP Address of the Raspberry pi
 port = 9999            #Must be same as that in server.py
 print('hello1')
 #In client.py we use another way to bind host and port together by using connect function()
@@ -265,7 +265,7 @@ def on_press(key):
     elif(format(key) == 'Key.space'):
         stopAllMotors();
     elif(format(key) == 'Key.enter'):
-        mode = (mode + 1) % 3;             #Change Mode value
+        mode = mode ^ 1;             #Change Mode value
         print('MODE CHANGED - 0: Propulsion, 1: Robotic Arm')
     elif(format(key) == 'Key.shift_r'):
         moveStraight();

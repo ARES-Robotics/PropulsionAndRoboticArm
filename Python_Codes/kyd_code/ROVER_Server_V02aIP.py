@@ -14,14 +14,15 @@ import os
 #serialPortMac = '/dev/tty.usbmodem14101'
 #serialPortPi = '/dev/ttyACM0'
 #arduinoSerial = serial.Serial(serialPortMac, 9600, timeout = 1)
-
+#curently fL -> 2,3
 mode = 0;
 motorspeed1 = 0
 motorspeed2 = 0
 forward_left_motor = motor_ibt2.motor1_ibt2(2,3)
-forward_right_motor = motor_ibt2.motor1_ibt2(4,17)
-backward_left_motor = motor_ibt2.motor1_ibt2(15,14)
-backward_right_motor = motor_ibt2.motor1_ibt2(23,18)
+forward_right_motor = motor_ibt2.motor1_ibt2(14,15)
+
+backward_left_motor = motor_ibt2.motor1_ibt2(4,17)
+backward_right_motor = motor_ibt2.motor1_ibt2(18,23)
 
 ################################
 # VARIABLES FOR ROBOTIC ARM:
@@ -36,7 +37,9 @@ clawOpenClose = 0;
 Motor1_baseMotor = motor_ibt2.motor1_ibt2(25,24);             #IBT2 (2 pin)
 Motor2_baseActuator = motor_l298n.motor1_L298n_NOPWM(6,13);#L298n (2 pin)
 Motor3_armActuator = motor_l298n.motor1_L298n_NOPWM(19,26); #L298n (2 pin)
-Motor4_clawPitch = motor_l298n.motor1_L298n_NOPWM(12,1); #L298n (2 pin)
+
+Motor4_clawPitch = motor_l298n.motor1_L298n(12,1,10); #L298n (2 pin)
+
 Motor5_clawRoll = motor_l298n.motor1_L298n(21,20,16);     #L298n (3 pin)
 Motor6_clawOpenClose = motor_l298n.motor1_L298n_NOPWM(7,8);#L298n (2 pin)
 #

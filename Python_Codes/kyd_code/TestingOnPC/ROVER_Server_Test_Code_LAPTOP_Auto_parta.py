@@ -5,39 +5,75 @@
 import socket
 #importing PySerial and time
 import serial
-import time
+import time, threading
 import motor_ibt2
 import motor_l298n
-###################ARDUINO SERIAL OBJECT#################################################
-#serialPortMac = '/dev/tty.usbmodem14101'
-#serialPortPi = '/dev/ttyACM0'
-#arduinoSerial = serial.Serial(serialPortMac, 9600, timeout = 1)
+import os
+import math;
 
+###################ARDUINO SERIAL OBJECT#################################################
+### FOR IMU
+ArduinoSerialPortMac = '/dev/tty.usbmodem14201'
+ArduinoSerialPortPi = '/dev/ttyACM0'
+arduinoSerial = serial.Serial(ArduinoSerialPortMac, 115600, timeout = 1)
+
+# FOR GPS:
+ArduinoGPSSerialPortMac = '/dev/tty.usbserial-1410'
+ArduinoGPSSerialPortPi = '/dev/ttyACM0'
+arduinoGPSSerial = serial.Serial(ArduinoGPSSerialPortMac, 9600, timeout = 1)
+
+#FOR nano
+#NanoSerialPortMac = '/dev/tty.usbmodem14101'
+#NanoSerialPortPi = '/dev/ttyACM0'
+#NanoSerial = serial.Serial(NanoSerialPortMac, 9600, timeout = 1)
+
+#################################
+# VARIABLES FOR PROPULSION MOTOR:
+#################################
 mode = 0;
 motorspeed1 = 0
 motorspeed2 = 0
-forward_left_motor = motor_ibt2.motor1_ibt2(2,3)
-forward_right_motor = motor_ibt2.motor1_ibt2(4,17)
-backward_left_motor = motor_ibt2.motor1_ibt2(15,14)
-backward_right_motor = motor_ibt2.motor1_ibt2(23,18)
 
-################################
-# VARIABLES FOR ROBOTIC ARM:
-#################################
-baseMotorSpeed = 0
-baseActuator = 0;
-armActuator = 0;
-clawPitch = 0;
-clawRoll = 0;
-clawOpenClose = 0;
+motorPWM1 = 0
+motorPWM2 = 0
 
-Motor1_baseMotor = motor_ibt2.motor1_ibt2(25,24);             #IBT2 (2 pin)
-Motor2_baseActuator = motor_l298n.motor1_L298n_NOPWM(6,13);#L298n (2 pin)
-Motor3_armActuator = motor_l298n.motor1_L298n_NOPWM(19,26); #L298n (2 pin)
-Motor4_clawPitch = motor_l298n.motor1_L298n_NOPWM(12,1); #L298n (2 pin)
-Motor5_clawRoll = motor_l298n.motor1_L298n(21,20,16);     #L298n (3 pin)
-Motor6_clawOpenClose = motor_l298n.motor1_L298n_NOPWM(7,8);#L298n (2 pin)b
-#
+currYaw = 0;
+pastYaw = 0;
+turnValue = 0;
+forward_left_motor = motor_ibt2.motor1_ibt2(6,13)
+forward_right_motor = motor_ibt2.motor1_ibt2(25,8)
+backward_left_motor = motor_ibt2.motor1_ibt2(19,26)
+backward_right_motor = motor_ibt2.motor1_ibt2(7,1)
+
+latDestination = 12.843908
+longDestination = 80.154008
+
+latcurr = 0.00;
+longcurr = 0.00;
+
+distance = 0.00;
+#########################################################
+#########################################################
+groundIP = "192.168.43.45"
+def IPCheckRoutine():
+    print(time.ctime())
+    response = os.system("ping -c 1 " + groundIP)
+    if response == 0:
+        print('BASE - CONNECTED');
+    else:
+        if(mode == 0):
+            dataFromBase = "0,0,0"
+            index1 = dataFromBase.index(',')
+            propulsion(dataFromBase,index1);
+        else:
+            dataFromBase = "1,0,0,0,0,0,0"
+            index1 = dataFromBase.index(',')
+            roboticArm(dataFromBase,index1);
+        print('BASE - NOT CONNECTED',dataFromBase)
+    threading.Timer(3, IPCheckRoutine).start()
+
+#########################################################
+######################################
 
 ######################################################################################################################
 ########## Function to Create a Socket ( socket connect two computers)
@@ -108,112 +144,140 @@ def strToInt(string):
     for i in range (0,len(string)):
                     if string[i].isdigit():
                         x+=int(string[i])*10**int(len(string)-i-1)
-#                        print('In strToInt',i,x)
+#                       print('In strToInt',i,x)
     if (flag ==1):
         return (-1)*x
     else:
         return x
 
-def propulsion(dataFromBase, index1):
+def calc_dist():
+    R = 6372800  # Earth radius in meters
+    
+    lat1 = latcurr;
+    lon1 = longcurr;
+    lat2 = latDestination;
+    lon2 = longDestination;
+    
+    phi1, phi2 = math.radians(lat1), math.radians(lat2)
+    dphi       = math.radians(lat2 - lat1)
+    dlambda    = math.radians(lon2 - lon1)
+    
+    a = math.sin(dphi/2)**2 + \
+        math.cos(phi1)*math.cos(phi2)*math.sin(dlambda/2)**2
+    
+    return 2*R*math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+def storeYaw():
+    print("Reading Yaw")
+    global currYaw;
+    data = str(arduinoSerial.readline());
+    data = data[2:len(data)-1]
+    #print("Read Yaw data = ",data)
+    if(len(data) >= 5):
+        data = data[:len(data) - 5]
+    #   print("Read Yaw data 2 = ",data)
+    if(len(data) < 5):
+        currYaw = float(data);
+    print("Read Yaw data 3 = ",currYaw)
+
+def storeGPScoordinates():
+    global latcurr, longcurr;
+    data = str(arduinoGPSSerial.readline());
+    data = data[2:len(data)-1]
+    if(len(data) >= 5):
+        data = data[:len(data) - 4]
+    index1 = data.index(" ")
+    print(index1)
+    #print(data)
+    latcurr = float(data[0:index1])
+    longcurr = float(data[index1+1:])
+    print("COORDINATES: ",latcurr, longcurr)
+
+def propulsion():
+    print("in propulsion")
     global mode,motorspeed1, motorspeed2, forward_left_motor, forward_right_motor, backward_left_motor, backward_right_motor;
-        
-    index2 = dataFromBase.index(',',index1+1)
-        
-    motorspeed = dataFromBase[index1+1:index2]
-    a = strToInt(motorspeed)
-    motorspeed1 = a
-    motorspeed2 = a
-        
-    #print('motorspeed1',motorspeed1)
-    motorspeed = dataFromBase[index2+1:]
-        
-    print(motorspeed)
-    b = strToInt(motorspeed)
-        
-    motorspeed1 -= b
-    motorspeed2 += b
-    if (motorspeed1 > 100):
-        motorspeed1 = 100
-    elif (motorspeed1 < -100):
-        motorspeed1 = -100
-        
-    if (motorspeed2 > 100):
-        motorspeed2 = 100
-    elif (motorspeed2 < -100):
-        motorspeed2 = -100
+    global pastYaw, currYaw, latDestination, longDestination, distance;
+    global latcurr, longcurr;
     
-    print('motorspeed1',motorspeed1)
-    print('motorspeed2',motorspeed2)
-        
-    forward_left_motor.moveMotor(motorspeed2)
-    backward_left_motor.moveMotor(motorspeed2)
-        
-    forward_right_motor.moveMotor(motorspeed1)
-    backward_right_motor.moveMotor(motorspeed1)
+    global motorPWM1, motorPWM2;
+    
+    storeGPScoordinates();
+    
+    distance = calc_dist();
+    
+    print("DISTANCE FROM TARGET", distance)
+    
+    GPSreadcount = 0;
+    
+    while(distance > 5):
+        storeYaw();
+        #Give this signal until desired yaw:
+        if(currYaw - pastYaw > 0):
+            motorPWM1 = 20;
+            motorPWM2 = 40;
+        elif(currYaw - pastYaw < 0):
+            motorPWM1 = 40;
+            motorPWM2 = 20;
+        else:
+            motorPWM1 = 30;
+            motorPWM2 = 30;
+            storeYaw(); #Keep updating the yaw value-
 
-def printRoboticArmVariables():
-    print(baseMotorSpeed, baseActuator, armActuator, clawPitch, clawRoll, clawOpenClose)
+        print("PWM DATAS: ",motorPWM1, motorPWM2)
+        #Then give straight command until next instruction arrives
+        forward_left_motor.moveMotor(motorPWM1)
+        backward_left_motor.moveMotor(motorPWM1)
+        forward_right_motor.moveMotor(motorPWM1)
+        backward_right_motor.moveMotor(motorPWM1)
+        
+        if(GPSreadcount % 100 == 0):
+            storeGPScoordinates();
+            distance = calc_dist();
+            
+        GPSreadcount += 1;
 
-def roboticArm(dataFromBase, index1):
-    global baseMotorSpeed, baseActuator, armActuator, clawRoll, clawPitch, clawOpenClose;
-    global Motor1_baseMotor, Motor2_baseActuator, Motor3_armActuator, Motor4_clawPitch, Motor5_clawRoll, Motor6_clawOpenClose;
     
-    index2 = dataFromBase.index(',',index1+1)
-    StrbaseMotorSpeed = dataFromBase[index1+1:index2]
-    baseMotorSpeed = strToInt(StrbaseMotorSpeed);
-    Motor1_baseMotor.moveMotor(baseMotorSpeed);
-    Motor1_baseMotor.printMotor('Motor1_baseMotor');
-    
-    index3 = dataFromBase.index(',',index2+1)
-    StrbaseActuator = dataFromBase[index2+1:index3]
-    baseActuator = strToInt(StrbaseActuator);
-    Motor2_baseActuator.moveMotor(baseActuator);
-    Motor2_baseActuator.printMotor('Motor2_baseActuator');
-    
-    index4 = dataFromBase.index(',',index3+1)
-    StrarmActuator = dataFromBase[index3+1:index4]
-    armActuator = strToInt(StrarmActuator);
-    Motor3_armActuator.moveMotor(armActuator);
-    Motor3_armActuator.printMotor('Motor3_armActuator');
-    
-    index5 = dataFromBase.index(',',index4+1)
-    StrclawPitch = dataFromBase[index4+1:index5]
-    clawPitch = strToInt(StrclawPitch);
-    Motor4_clawPitch.moveMotor(clawPitch);
-    Motor4_clawPitch.printMotor('Motor4_clawPitch');
-    
-    index6 = dataFromBase.index(',',index5+1)
-    StrclawRoll = dataFromBase[index5+1:index6]
-    clawRoll = strToInt(StrclawRoll);
-    Motor5_clawRoll.moveMotor(clawRoll);
-    Motor5_clawRoll.printMotor('Motor5_clawRoll');
-    
-    StrclawOpenClose = dataFromBase[index6+1:]
-    clawOpenClose = strToInt(StrclawOpenClose);
-    Motor6_clawOpenClose.moveMotor(clawOpenClose);
-    Motor6_clawOpenClose.printMotor('Motor6_clawOpenClose');
-    
-    printRoboticArmVariables();
-
+        if(GPSreadcount > 100000):
+            GPSreadcount -= 100000;
+        
+        print("DISTANCE FROM TARGET",GPSreadcount, distance)
+            
+    #STOP ALL MOTORS.
+    forward_left_motor.moveMotor(0)
+    backward_left_motor.moveMotor(0)
+    forward_right_motor.moveMotor(0)
+    backward_right_motor.moveMotor(0)
 
 def read_commands(conn):
     global mode,motorspeed1, motorspeed2, forward_left_motor, forward_right_motor, backward_left_motor, backward_right_motor;
-    while True:
-        dataFromBase = str(conn.recv(1024),"utf-8")
-        print("\n Received Data = "+dataFromBase)
-        #        print('lengthOfData', len(dataFromBase))
-        if(len(dataFromBase) > 3):
-            send_commands(conn,'YES')
-            index1 = dataFromBase.index(',')
-            modeStr = dataFromBase[0:index1]
-            
-            mode = strToInt(modeStr)
-            
-            if(mode == 0):
-                propulsion(dataFromBase,index1);
-            elif(mode == 1):
-                roboticArm(dataFromBase,index1);
+    global pastYaw, currYaw, latDestination, longDestination;
     
+    #Read first 20 data and IGNORE them:
+    for i in range (500):
+        data = str(arduinoSerial.readline());
+        print(data)
+    #Read first 20 data and ignore them:
+    for i in range (5):
+        data = str(arduinoGPSSerial.readline());
+        print(data)
+    while True:
+        #Read any data from sockets
+        dataFromBase = str(conn.recv(1024),"utf-8")
+        print(dataFromBase)
+        #Now noting the yaw value before moving
+        storeYaw();
+        pastYaw = currYaw;
+        #Now noting the GPS destination before moving
+        latDestination = 12.843908
+        longDestination = 80.154008
+        
+        print("\n Received Data = "+dataFromBase)
+        print("pastYAW",pastYaw)
+        
+#       print('lengthOfData', len(dataFromBase))
+        if(len(dataFromBase) >= 1):
+            send_commands(conn,'YES')
+            propulsion();
         else:
             send_commands(conn,'NO')
 

@@ -9,15 +9,12 @@ import time
 import serial
 #importing the ke yboard listener from pynput
 from pynput import keyboard
-import numpy as np
+
 ##################################################################################
 ###################### SOCKET OBJECT AND VARIABLES ###################################################
 ##################################################################################
-
-commands = []    #list of commands
-
 s = socket.socket()
-host = '192.168.10.102'  #IP Address of the Raspberry pi
+host = '192.168.10.105'  #IP Address of the Raspberry pi
 port = 9999            #Must be same as that in server.py
 print('hello1')
 #In client.py we use another way to bind host and port together by using connect function()
@@ -190,18 +187,13 @@ def closeArmActuator():
 # 4. Pitch Motor
 def clockwisePitch():
     global clawPitch;
-    clawPitch = clawPitch + deltaIncrement;
-    printSpeeds()
-    if(clawPitch > 100):
-        clawPitch = 100;
+    clawPitch = 100;
     printSpeeds()
     sendDatatoRaspi()
 
 def antiClockwisePitch():
     global clawPitch;
-    clawPitch = clawPitch - deltaIncrement;
-    if (clawPitch < -100):
-        clawPitch = -100;
+    clawPitch = -100;
     printSpeeds()
     sendDatatoRaspi()
 
@@ -256,26 +248,24 @@ def printSpeeds():
 def on_press(key):
     global deltaIncrement
     global mode
-    
     keyData = str(key)
-    
-    commands.append(keyData)
-    commands_arr = np.asarray(commands);
-    np.save('commands_arr.npy', commands_arr)
-    
     print('pressed val = ',keyData)
     print('length', len(keyData))
     #data = '{0}'.format(key) This will work too than str(key)
     #print('data',data)
     #print('length of data',len(data))
     if(format(key)=='Key.up'):
-        increaseForwardBackwardSpeed();
+        stringData = "0,1.02,0.75,30"
+        s.send(str.encode(stringData))
     elif(format(key)=='Key.down'):
-        decreaseForwardBackwardSpeed();
+        stringData = "0,1.02,0.75,30"
+        s.send(str.encode(stringData))
     elif(format(key)=='Key.left'):
-        decreaseleftRightSpeed();
+        stringData = "0,1.02,0.75,30"
+        s.send(str.encode(stringData))
     elif(format(key)=='Key.right'):
-        increaseleftRightSpeed();
+        stringData = "0,1.02,0.75,30"
+        s.send(str.encode(stringData))
     elif(format(key) == 'Key.space'):
         stopAllMotors();
     elif(format(key) == 'Key.enter'):

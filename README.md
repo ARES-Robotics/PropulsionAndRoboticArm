@@ -12,3 +12,7 @@ Folder3. UNO Fsi6 PWM:
 
 Folder4. PythonCodes:  
 &nbsp; &nbsp; keyboard_control codes are base codes and ROVER_SERVER codes are codes to run on raspberry pi.  
+&nbsp; &nbsp; &nbsp; &nbsp; keyborad_controls_v03: Code used at base during IRC  
+&nbsp; &nbsp; &nbsp; &nbsp; ROVER_Server_V02aIP: Code used at rover during IRC. It checks IP of base to ensure we are connected or not.   
+&nbsp; &nbsp; &nbsp; &nbsp; ROVER_Server_V02: This code does not check IP.  
+&nbsp; &nbsp; &nbsp; &nbsp; Various folders have codes that were used to develop above main codes. Thses codes can be tested on laptop, that eleminates need of Raspi while developing . 
